@@ -832,40 +832,23 @@
       ctx.save();
       ctx.translate(o.x, o.y);
       
-      // Danger aura
-      const ag = ctx.createRadialGradient(0, 0, o.r * 0.3, 0, 0, o.r * 1.2);
-      ag.addColorStop(0, 'rgba(255,77,90,0.2)');
-      ag.addColorStop(1, 'rgba(255,77,90,0)');
-      ctx.fillStyle = ag;
-      ctx.beginPath();
-      ctx.arc(0, 0, o.r * 1.2, 0, Math.PI * 2);
-      ctx.fill();
-      
       // Try sprite first
       const img = tokenImgs[o.token];
       if (img && img.complete && img.naturalWidth > 0) {
         const sz = o.r * 2.8;
+        // Blinking danger effect (pulse every 8 frames)
+        const blink = Math.floor(frame / 8) % 2 === 0 ? 1 : 0.35;
+        ctx.globalAlpha = blink;
         ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
-        // 🚫 Prohibition sign overlay (traffic-style "no entry")
-        ctx.strokeStyle = '#ff2020';
-        ctx.lineWidth = 3.5;
-        ctx.shadowColor = 'rgba(255,32,32,0.6)';
-        ctx.shadowBlur = 10;
+        ctx.globalAlpha = 1;
+        // 🔥 Red glow aura
+        const ag = ctx.createRadialGradient(0, 0, o.r * 0.2, 0, 0, o.r * 1.2);
+        ag.addColorStop(0, 'rgba(255,50,50,0)');
+        ag.addColorStop(0.7, 'rgba(255,30,30,0.15)');
+        ag.addColorStop(1, 'rgba(255,30,30,0)');
+        ctx.fillStyle = ag;
         ctx.beginPath();
-        ctx.arc(0, 0, o.r * 0.95, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-        // Diagonal slash
-        ctx.strokeStyle = '#ff2020';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.moveTo(-o.r * 0.6, -o.r * 0.6);
-        ctx.lineTo(o.r * 0.6, o.r * 0.6);
-        ctx.stroke();
-        // Slight transparency on icon underneath
-        ctx.fillStyle = 'rgba(255,32,32,0.08)';
-        ctx.beginPath();
-        ctx.arc(0, 0, o.r * 0.95, 0, Math.PI * 2);
+        ctx.arc(0, 0, o.r * 1.2, 0, Math.PI * 2);
         ctx.fill();
       } else {
         // Fallback: diamond danger shape
