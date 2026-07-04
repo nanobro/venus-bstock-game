@@ -592,9 +592,26 @@
   }
 
   // ─── TOKEN DEFINITIONS ───────────────────
+  // 🟦 COLLECTIBLES (bStock tokens to highlight)
   const BSTOCK = ['NVDAB', 'SPCXB', 'TSLAB'];
   const BSTOCK_BURST = { NVDAB: '#4da6ff', SPCXB: '#a78bfa', TSLAB: '#34d399' };
-  const DEPRECATED = ['BCH','ADA','LTC','TWT','LINK','AAVE','DOGE','UNI','TRX','CAKE','XRP','FDUSD','SOL','TRX','U','USDC','USDT','XAUm','WBETH','WBNB','asBNB','lisUSD','slisBNB','solvBTC','xSolvBTC','USDe','sUSDe','USD1','XVS'];
+  
+  // 🟥 AVOID — BSC deprecated & off-boarded markets from Venus community proposal
+  // Source: https://community.venus.io/t/5833 (BNB Chain Core + Isolated pools)
+  const DEPRECATED = [
+    // BNB Core pool
+    'DOT','FIL','BUSD',
+    // BNB DeFi pool
+    'TWT',
+    // BNB Tron pool
+    'TRX',
+    // BNB Liquid Staked BNB
+    'asBNB','slisBNB',
+    // BNB Stablecoins pool
+    'lisUSD',
+    // Additional deprecated from May 2026 off-boarding (multi-chain)
+    'BCH','ADA','LTC','LINK','AAVE','DOGE','UNI','CAKE','XRP','SOL','FDUSD'
+  ];
 
   // ─── SPAWNERS ────────────────────────────
   function spawnCollectible() {
