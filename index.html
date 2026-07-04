@@ -563,8 +563,8 @@
     player = {
       x: W / 2,
       y: H - 110,
-      w: 44,
-      h: 52,
+      w: 48,
+      h: 64,
       speed: 6.5,
       inv: 0,
       tilt: 0
@@ -731,59 +731,263 @@
     ctx.translate(x, y);
     ctx.rotate(tilt);
     
-    // Engine trail
-    const tg = ctx.createLinearGradient(0, h/2 + 2, 0, h/2 + 22);
-    tg.addColorStop(0, 'rgba(77,143,255,0.7)');
-    tg.addColorStop(0.5, 'rgba(26,92,255,0.2)');
-    tg.addColorStop(1, 'rgba(26,92,255,0)');
-    ctx.fillStyle = tg;
+    const hh = h / 2;   // half height
+    const hw = w / 2;   // half width
+    
+    // ─── EXHAUST FLAME ──────────────────────
+    const flameH = h * 0.3;
+    const fwMid = hw * 0.32;
+    
+    // Flame outer glow
+    const glow = ctx.createRadialGradient(0, hh, 0, 0, hh, flameH * 0.9);
+    glow.addColorStop(0, 'rgba(0, 220, 255, 0.25)');
+    glow.addColorStop(1, 'rgba(0, 220, 255, 0)');
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.moveTo(-w/5, h/2);
-    ctx.quadraticCurveTo(0, h/2 + 18, w/5, h/2);
+    ctx.arc(0, hh + flameH * 0.4, flameH * 0.7, 0, Math.PI * 2);
     ctx.fill();
     
-    // Ship shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    // Faceted flame - center facet
+    const fg = ctx.createLinearGradient(0, hh, 0, hh + flameH);
+    fg.addColorStop(0, '#ffffff');
+    fg.addColorStop(0.2, '#00e5ff');
+    fg.addColorStop(0.6, '#00b0ff');
+    fg.addColorStop(1, '#10b981');
+    ctx.fillStyle = fg;
     ctx.beginPath();
-    ctx.moveTo(0, -h/2 + 3);
-    ctx.lineTo(-w/3 + 1, h/3 + 1);
-    ctx.lineTo(-w/6, h/2 + 2);
-    ctx.lineTo(w/6, h/2 + 2);
-    ctx.lineTo(w/3 - 1, h/3 + 1);
+    ctx.moveTo(-fwMid * 0.4, hh);
+    ctx.quadraticCurveTo(0, hh + flameH + 4, fwMid * 0.4, hh);
     ctx.closePath();
     ctx.fill();
     
-    // Main body
-    ctx.fillStyle = '#f0f2f8';
+    // Left flame facet
+    const lg = ctx.createLinearGradient(0, hh, 0, hh + flameH);
+    lg.addColorStop(0, '#80eeff');
+    lg.addColorStop(1, 'rgba(16,185,129,0.6)');
+    ctx.fillStyle = lg;
     ctx.beginPath();
-    ctx.moveTo(0, -h/2);
-    ctx.lineTo(-w/3, h/3);
-    ctx.lineTo(-w/6, h/2);
-    ctx.lineTo(w/6, h/2);
-    ctx.lineTo(w/3, h/3);
+    ctx.moveTo(-fwMid * 0.95, hh);
+    ctx.quadraticCurveTo(-fwMid * 0.6, hh + flameH - 2, -fwMid * 0.55, hh);
     ctx.closePath();
     ctx.fill();
     
-    // Accent
-    ctx.fillStyle = '#4d8fff';
+    // Right flame facet
+    ctx.fillStyle = lg;
     ctx.beginPath();
-    ctx.moveTo(0, -h/2 + 5);
-    ctx.lineTo(-w/4 + 3, h/3 - 3);
-    ctx.lineTo(0, h/5);
-    ctx.lineTo(w/4 - 3, h/3 - 3);
+    ctx.moveTo(fwMid * 0.95, hh);
+    ctx.quadraticCurveTo(fwMid * 0.6, hh + flameH - 2, fwMid * 0.55, hh);
     ctx.closePath();
     ctx.fill();
     
-    // Cockpit
+    // ─── NOZZLE ────────────────────────────
+    const nzY1 = hh - 3;
+    const nzY2 = hh + 2;
+    const nzW = hw * 0.22;
+    ctx.fillStyle = '#1a237e';
+    ctx.beginPath();
+    ctx.moveTo(-nzW, nzY1);
+    ctx.lineTo(nzW, nzY1);
+    ctx.lineTo(nzW * 0.8, nzY2);
+    ctx.lineTo(-nzW * 0.8, nzY2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Nozzle rim glow
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-nzW * 0.75, nzY2);
+    ctx.lineTo(nzW * 0.75, nzY2);
+    ctx.stroke();
+    
+    // ─── MAIN BODY ─────────────────────────
+    // Body outline points (clockwise from nose tip)
+    const noseY = -hh + 1;
+    const shoulderY = -hh * 0.35;
+    const widestY = hh * 0.02;
+    const waistY = hh * 0.35;
+    const baseY = hh - 4;
+    
+    const shoulderW = hw * 0.55;
+    const widestW = hw * 0.7;
+    const waistW = hw * 0.4;
+    const baseW = hw * 0.25;
+    
+    // Shadow outline
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.moveTo(2, noseY + 3);
+    ctx.quadraticCurveTo(shoulderW - 1, shoulderY + 2, widestW + 1, widestY + 2);
+    ctx.quadraticCurveTo(waistW + 1, waistY + 2, baseW + 1, baseY + 2);
+    ctx.lineTo(-baseW + 1, baseY + 2);
+    ctx.quadraticCurveTo(-waistW + 1, waistY + 2, -widestW - 1, widestY + 2);
+    ctx.quadraticCurveTo(-shoulderW - 1, shoulderY + 2, -2, noseY + 3);
+    ctx.closePath();
+    ctx.fill();
+    
+    // ─── WHITE FINS (Body) ─────────────────
+    const bodyGrad = ctx.createLinearGradient(-widestW, 0, widestW, 0);
+    bodyGrad.addColorStop(0, '#d0d8e8');
+    bodyGrad.addColorStop(0.15, '#eef0f6');
+    bodyGrad.addColorStop(0.35, '#f8faff');
+    bodyGrad.addColorStop(0.5, '#e0e6f0');
+    bodyGrad.addColorStop(0.65, '#f8faff');
+    bodyGrad.addColorStop(0.85, '#eef0f6');
+    bodyGrad.addColorStop(1, '#c0cce0');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, noseY);
+    ctx.quadraticCurveTo(shoulderW, shoulderY, widestW, widestY);
+    ctx.quadraticCurveTo(waistW, waistY, baseW, baseY);
+    ctx.lineTo(-baseW, baseY);
+    ctx.quadraticCurveTo(-waistW, waistY, -widestW, widestY);
+    ctx.quadraticCurveTo(-shoulderW, shoulderY, 0, noseY);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Fin edge highlights (left side rim light)
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, noseY + 4);
+    ctx.quadraticCurveTo(shoulderW * 0.9, shoulderY + 2, widestW * 0.9, widestY + 1);
+    ctx.stroke();
+    
+    // Right edge shadow
+    ctx.strokeStyle = 'rgba(0,0,40,0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, noseY + 4);
+    ctx.quadraticCurveTo(-shoulderW * 0.85, shoulderY + 2, -widestW * 0.85, widestY + 1);
+    ctx.stroke();
+    
+    // ─── BOTTOM FIN FLARE ──────────────────
+    // Small wing tips at the bottom of the fins
+    ctx.fillStyle = '#dce4f0';
+    ctx.beginPath();
+    ctx.moveTo(widestW, widestY + 2);
+    ctx.quadraticCurveTo(waistW + hw * 0.45, waistY - 5, baseW + hw * 0.3, waistY + 8);
+    ctx.lineTo(baseW + 2, baseY - 2);
+    ctx.quadraticCurveTo(waistW + 1, waistY + 2, widestW - 2, widestY + 5);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = '#c4d0e0';
+    ctx.beginPath();
+    ctx.moveTo(-widestW, widestY + 2);
+    ctx.quadraticCurveTo(-waistW - hw * 0.45, waistY - 5, -baseW - hw * 0.3, waistY + 8);
+    ctx.lineTo(-baseW - 2, baseY - 2);
+    ctx.quadraticCurveTo(-waistW - 1, waistY + 2, -widestW + 2, widestY + 5);
+    ctx.closePath();
+    ctx.fill();
+    
+    // ─── CENTRAL BLUE CHANNEL ──────────────
+    ctx.save();
+    // Clip to body shape
+    ctx.beginPath();
+    ctx.moveTo(0, noseY);
+    ctx.quadraticCurveTo(shoulderW * 0.3, shoulderY, hw * 0.25, widestY);
+    ctx.lineTo(hw * 0.2, baseY);
+    ctx.lineTo(-hw * 0.2, baseY);
+    ctx.lineTo(-hw * 0.25, widestY);
+    ctx.quadraticCurveTo(-shoulderW * 0.3, shoulderY, 0, noseY);
+    ctx.closePath();
+    ctx.clip();
+    
+    // Blue channel gradient
+    const cg = ctx.createLinearGradient(0, -hh, 0, hh);
+    cg.addColorStop(0, '#1a3a8a');
+    cg.addColorStop(0.2, '#1a5cff');
+    cg.addColorStop(0.5, '#2563eb');
+    cg.addColorStop(0.8, '#1e40af');
+    cg.addColorStop(1, '#1a237e');
+    ctx.fillStyle = cg;
+    ctx.fillRect(-hw, -hh, hw * 2, h * 2);
+    ctx.restore();
+    
+    // Channel edge highlight
+    ctx.strokeStyle = 'rgba(77, 143, 255, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(hw * 0.22, widestY);
+    ctx.lineTo(hw * 0.18, baseY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-hw * 0.22, widestY);
+    ctx.lineTo(-hw * 0.18, baseY);
+    ctx.stroke();
+    
+    // ─── THE EYE / SENSOR ───────────────────
+    const eyeY = -hh * 0.18;
+    const eyeR = hw * 0.14;
+    
+    // Outer glow ring
+    const eg = ctx.createRadialGradient(0, eyeY, eyeR * 0.6, 0, eyeY, eyeR * 1.6);
+    eg.addColorStop(0, 'rgba(0, 229, 255, 0.35)');
+    eg.addColorStop(1, 'rgba(0, 229, 255, 0)');
+    ctx.fillStyle = eg;
+    ctx.beginPath();
+    ctx.arc(0, eyeY, eyeR * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Outer ring
+    ctx.fillStyle = '#0d47a1';
+    ctx.beginPath();
+    ctx.arc(0, eyeY, eyeR * 1.15, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Blue glow ring
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#00e5ff';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(0, eyeY, eyeR * 1.0, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Inner circle (white)
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f0f8ff';
+    ctx.beginPath();
+    ctx.arc(0, eyeY, eyeR * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inset shadow on white
+    ctx.fillStyle = 'rgba(0,0,40,0.08)';
+    ctx.beginPath();
+    ctx.arc(eyeR * 0.15, eyeY + eyeR * 0.15, eyeR * 0.65, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Core dot
     ctx.fillStyle = '#1a5cff';
     ctx.beginPath();
-    ctx.ellipse(0, -h/7, 5.5, 8, 0, 0, Math.PI * 2);
+    ctx.arc(0, eyeY, eyeR * 0.28, 0, Math.PI * 2);
     ctx.fill();
     
-    // Cockpit shine
+    // Core highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.beginPath();
+    ctx.arc(-eyeR * 0.1, eyeY - eyeR * 0.1, eyeR * 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // ─── NOSE TIP DETAIL ──────────────────
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.beginPath();
-    ctx.ellipse(-1.5, -h/7 - 2, 2.5, 3, 0, 0, Math.PI * 2);
+    ctx.moveTo(-hw * 0.05, noseY + 15);
+    ctx.lineTo(0, noseY + 8);
+    ctx.lineTo(hw * 0.05, noseY + 15);
+    ctx.closePath();
+    ctx.fill();
+    
+    // ─── SURFACE HIGHLIGHTS ───────────────
+    // Left fin specular highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath();
+    ctx.moveTo(-hw * 0.05, noseY + 20);
+    ctx.quadraticCurveTo(-shoulderW * 0.7, shoulderY + 10, -widestW * 0.6, widestY + 5);
+    ctx.lineTo(-widestW * 0.55, widestY + 2);
+    ctx.quadraticCurveTo(-shoulderW * 0.65, shoulderY + 5, -hw * 0.03, noseY + 15);
+    ctx.closePath();
     ctx.fill();
     
     ctx.restore();
