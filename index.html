@@ -132,12 +132,13 @@
   }
 
   /* ─── VENUS LOGO ───────────────────────── */
-  .venus-logo-svg {
+  .venus-logo-img {
     width: 64px;
     height: 64px;
     margin-bottom: 12px;
-    filter: drop-shadow(0 0 32px rgba(26, 92, 255, 0.5));
+    filter: drop-shadow(0 0 40px rgba(26, 92, 255, 0.6));
     animation: logoFloat 3s ease-in-out infinite;
+    object-fit: contain;
   }
 
   @keyframes logoFloat {
@@ -397,7 +398,7 @@
   @media (max-width: 768px) {
     .mobile-ctrls { display: flex; }
     .title { font-size: 32px; }
-    .venus-logo-svg { width: 52px; height: 52px; }
+    .venus-logo-img { width: 52px; height: 52px; }
     .token-highlights { flex-wrap: wrap; justify-content: center; }
     .rules { flex-direction: column; gap: 12px; }
     .final-score { font-size: 48px; }
@@ -429,14 +430,7 @@
 
   <!-- Start Screen -->
   <div class="overlay" id="start-screen">
-    <svg class="venus-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="66" cy="100" r="18" fill="white"/>
-      <g transform="translate(100, 100)">
-        <path d="M 0 -35 Q 20 0 0 35" stroke="white" stroke-width="13" fill="none" stroke-linecap="round"/>
-        <path d="M 24 -42 Q 48 0 24 42" stroke="white" stroke-width="13" fill="none" stroke-linecap="round"/>
-        <path d="M 48 -49 Q 76 0 48 49" stroke="white" stroke-width="13" fill="none" stroke-linecap="round"/>
-      </g>
-    </svg>
+    <img class="venus-logo-img" src="venus-sign.png" alt="Venus Protocol">
     <div class="title">bStock Defender</div>
     <div class="brand-line">
       <span class="brand-dot"></span>
@@ -562,6 +556,20 @@
   const shipImg = new Image();
   shipImg.src = 'ship.png';
 
+  // ─── TOKEN SPRITE LOADER ─────────────────
+  const tokenImgs = {};
+  const bstockColors = { NVDAB: '#1a5cff', SPCXB: '#7c3aed', TSLAB: '#059669' };
+  
+  function loadTokenSprite(sym) {
+    const img = new Image();
+    img.src = 'tokens/' + sym + '.png';
+    tokenImgs[sym] = img;
+  }
+  
+  // Deprecated tokens that have official icons
+  ['AAVE','ADA','BCH','BNB','BTCB','BUSD','CAKE','DAI','DOGE','ETH','FIL','LINK','LTC','XVS'].forEach(loadTokenSprite);
+  // bStock tokens use colored circle fallback
+
   // ─── PLAYER ──────────────────────────────
   function initPlayer() {
     player = {
@@ -577,11 +585,6 @@
 
   // ─── TOKEN DEFINITIONS ───────────────────
   const BSTOCK = ['NVDAB', 'SPCXB', 'TSLAB'];
-  const BSTOCK_COLORS = {
-    NVDAB: { bg: '#1a5cff', glow: '#4da6ff', ring: 'rgba(26,92,255,0.25)' },
-    SPCXB: { bg: '#7c3aed', glow: '#a78bfa', ring: 'rgba(124,58,237,0.25)' },
-    TSLAB: { bg: '#059669', glow: '#34d399', ring: 'rgba(5,150,105,0.25)' }
-  };
   const DEPRECATED = ['BCH','ADA','LTC','TWT','LINK','AAVE','DOGE','UNI','TRX','CAKE','XRP','FDUSD','SOL'];
 
   // ─── SPAWNERS ────────────────────────────
@@ -681,7 +684,7 @@
         if (dx < (c.r + player.w/3) && dy < (c.r + player.h/3)) {
           score += 100;
           collected[c.token]++;
-          burst(c.x, c.y, BSTOCK_COLORS[c.token].glow, 14);
+          burst(c.x, c.y, bstockColors[c.token] || '#4da6ff', 14);
           collectibles.splice(i, 1);
         }
       }
@@ -768,39 +771,32 @@
       ctx.translate(c.x, c.y);
       ctx.rotate(c.rot);
       
-      const col = BSTOCK_COLORS[c.token];
       const s = 1 + Math.sin(c.phase) * 0.06;
       ctx.scale(s, s);
       
-      // Outer glow ring
-      ctx.fillStyle = col.ring;
-      ctx.beginPath();
-      ctx.arc(0, 0, c.r + 6, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Hexagon
-      ctx.fillStyle = col.bg;
-      ctx.strokeStyle = col.glow;
-      ctx.lineWidth = 2;
-      ctx.shadowColor = col.glow;
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (Math.PI / 3) * i - Math.PI / 6;
-        const px = Math.cos(a) * c.r, py = Math.sin(a) * c.r;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      const img = tokenImgs[c.token];
+      if (img && img.complete && img.naturalWidth > 0) {
+        // Draw actual token sprite
+        const sz = c.r * 2.2;
+        ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
+      } else {
+        // Fallback: colored circle with label
+        const col = bstockColors[c.token] || '#1a5cff';
+        ctx.fillStyle = col;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${Math.max(7.5, c.r * 0.44)}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(c.token, 0, 0.5);
       }
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      
-      // Label
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = 'white';
-      ctx.font = `bold ${Math.max(7.5, c.r * 0.52)}px Inter, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(c.token, 0, 0.5);
       
       ctx.restore();
     }
@@ -820,35 +816,50 @@
       ctx.arc(0, 0, o.r * 1.2, 0, Math.PI * 2);
       ctx.fill();
       
-      // Diamond body
-      ctx.fillStyle = '#ff4d5a';
-      ctx.shadowColor = 'rgba(255,77,90,0.5)';
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.moveTo(0, -o.r);
-      ctx.lineTo(o.r * 0.85, 0);
-      ctx.lineTo(0, o.r);
-      ctx.lineTo(-o.r * 0.85, 0);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Inner cross
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(-o.r * 0.35, -o.r * 0.35);
-      ctx.lineTo(o.r * 0.35, o.r * 0.35);
-      ctx.moveTo(o.r * 0.35, -o.r * 0.35);
-      ctx.lineTo(-o.r * 0.35, o.r * 0.35);
-      ctx.stroke();
-      
-      // Label
-      ctx.fillStyle = 'white';
-      ctx.font = `bold ${Math.max(7, o.r * 0.5)}px Inter, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(o.token, 0, 0.5);
+      // Try sprite first
+      const img = tokenImgs[o.token];
+      if (img && img.complete && img.naturalWidth > 0) {
+        const sz = o.r * 2.2;
+        // Add red tint overlay for danger effect
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
+        ctx.globalAlpha = 1;
+        // Red danger ring
+        ctx.strokeStyle = '#ff4d5a';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = 'rgba(255,77,90,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(0, 0, o.r * 0.8, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      } else {
+        // Fallback: diamond danger shape
+        ctx.fillStyle = '#ff4d5a';
+        ctx.shadowColor = 'rgba(255,77,90,0.5)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(0, -o.r);
+        ctx.lineTo(o.r * 0.85, 0);
+        ctx.lineTo(0, o.r);
+        ctx.lineTo(-o.r * 0.85, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(-o.r * 0.35, -o.r * 0.35);
+        ctx.lineTo(o.r * 0.35, o.r * 0.35);
+        ctx.moveTo(o.r * 0.35, -o.r * 0.35);
+        ctx.lineTo(-o.r * 0.35, o.r * 0.35);
+        ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${Math.max(7, o.r * 0.5)}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(o.token, 0, 0.5);
+      }
       
       ctx.restore();
     }
