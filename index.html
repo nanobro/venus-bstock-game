@@ -558,7 +558,6 @@
 
   // ─── TOKEN SPRITE LOADER ─────────────────
   const tokenImgs = {};
-  const bstockColors = { NVDAB: '#1a5cff', SPCXB: '#7c3aed', TSLAB: '#059669' };
   
   function loadTokenSprite(sym) {
     const img = new Image();
@@ -566,9 +565,10 @@
     tokenImgs[sym] = img;
   }
   
-  // Deprecated tokens that have official icons
-  ['AAVE','ADA','BCH','BNB','BTCB','BUSD','CAKE','DAI','DOGE','ETH','FIL','LINK','LTC','XVS'].forEach(loadTokenSprite);
-  // bStock tokens use colored circle fallback
+  // Load ALL token sprites from the official Venus asset pack
+  // bStock (collectibles) use unused icons: XVS, VAI, DOT
+  // Deprecated (obstacles) use their actual icons
+  ['AAVE','ADA','BCH','BNB','BTCB','BUSD','CAKE','DAI','DOGE','DOT','ETH','FIL','LINK','LTC','XVS'].forEach(loadTokenSprite);
 
   // ─── PLAYER ──────────────────────────────
   function initPlayer() {
@@ -585,6 +585,8 @@
 
   // ─── TOKEN DEFINITIONS ───────────────────
   const BSTOCK = ['NVDAB', 'SPCXB', 'TSLAB'];
+  const BSTOCK_ICONS = { NVDAB: 'XVS', SPCXB: 'DOT', TSLAB: 'FIL' };
+  const BSTOCK_BURST = { NVDAB: '#4da6ff', SPCXB: '#a78bfa', TSLAB: '#34d399' };
   const DEPRECATED = ['BCH','ADA','LTC','TWT','LINK','AAVE','DOGE','UNI','TRX','CAKE','XRP','FDUSD','SOL'];
 
   // ─── SPAWNERS ────────────────────────────
@@ -594,6 +596,7 @@
       x: 30 + Math.random() * (W - 60),
       y: -36,
       token: t,
+      icon: BSTOCK_ICONS[t],
       r: 16,
       speed: 1.4 + Math.random() * 1.6 + wave * 0.08,
       rot: 0,
@@ -684,7 +687,7 @@
         if (dx < (c.r + player.w/3) && dy < (c.r + player.h/3)) {
           score += 100;
           collected[c.token]++;
-          burst(c.x, c.y, bstockColors[c.token] || '#4da6ff', 14);
+          burst(c.x, c.y, BSTOCK_BURST[c.token] || '#4da6ff', 14);
           collectibles.splice(i, 1);
         }
       }
@@ -774,18 +777,17 @@
       const s = 1 + Math.sin(c.phase) * 0.06;
       ctx.scale(s, s);
       
-      const img = tokenImgs[c.token];
+      const img = tokenImgs[c.icon];
       if (img && img.complete && img.naturalWidth > 0) {
-        // Draw actual token sprite
+        // Draw official Venus token icon
         const sz = c.r * 2.2;
         ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
       } else {
-        // Fallback: colored circle with label
-        const col = bstockColors[c.token] || '#1a5cff';
-        ctx.fillStyle = col;
+        // Fallback: simple colored circle
+        ctx.fillStyle = '#1a5cff';
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
-        ctx.shadowColor = col;
+        ctx.shadowColor = '#4da6ff';
         ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.arc(0, 0, c.r, 0, Math.PI * 2);
