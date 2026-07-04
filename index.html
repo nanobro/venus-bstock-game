@@ -558,17 +558,25 @@
 
   // ─── TOKEN SPRITE LOADER ─────────────────
   const tokenImgs = {};
+  const tokenExts = {}; // tracks which extension each token uses
   
   function loadTokenSprite(sym) {
     const img = new Image();
-    img.src = 'tokens/' + sym + '.png';
+    // Try SVG first (vector, sharper), fall back to PNG
+    img.src = 'tokens/' + sym + '.svg';
+    img.onerror = function() {
+      // SVG not found, try PNG
+      this.src = 'tokens/' + sym + '.png';
+      this.onerror = null;
+    };
     tokenImgs[sym] = img;
   }
   
-  // Load ALL token sprites from the official Venus asset pack
-  // bStock (collectibles) use unused icons: XVS, VAI, DOT
-  // Deprecated (obstacles) use their actual icons
-  ['AAVE','ADA','BCH','BNB','BTCB','BUSD','CAKE','DAI','DOGE','DOT','ETH','FIL','LINK','LTC','XVS'].forEach(loadTokenSprite);
+  // Load ALL token sprites from Riety's Venus.io download
+  const ALL_TOKENS = ['AAVE','ADA','BCH','BNB','BTCB','CAKE','DAI','DOGE','ETH','FDUSD','LINK','LTC',
+    'NVDAB','SOL','SPCXB','TRX','TSLAB','TWT','U','UNI','USD1','USDC','USDT','USDe',
+    'WBETH','WBNB','XAUm','XRP','XVS','asBNB','lisUSD','sUSDe','slisBNB','solvBTC','xSolvBTC'];
+  ALL_TOKENS.forEach(loadTokenSprite);
 
   // ─── PLAYER ──────────────────────────────
   function initPlayer() {
@@ -585,9 +593,8 @@
 
   // ─── TOKEN DEFINITIONS ───────────────────
   const BSTOCK = ['NVDAB', 'SPCXB', 'TSLAB'];
-  const BSTOCK_ICONS = { NVDAB: 'XVS', SPCXB: 'DOT', TSLAB: 'FIL' };
   const BSTOCK_BURST = { NVDAB: '#4da6ff', SPCXB: '#a78bfa', TSLAB: '#34d399' };
-  const DEPRECATED = ['BCH','ADA','LTC','TWT','LINK','AAVE','DOGE','UNI','TRX','CAKE','XRP','FDUSD','SOL'];
+  const DEPRECATED = ['BCH','ADA','LTC','TWT','LINK','AAVE','DOGE','UNI','TRX','CAKE','XRP','FDUSD','SOL','TRX','U','USDC','USDT','XAUm','WBETH','WBNB','asBNB','lisUSD','slisBNB','solvBTC','xSolvBTC','USDe','sUSDe','USD1','XVS'];
 
   // ─── SPAWNERS ────────────────────────────
   function spawnCollectible() {
@@ -596,7 +603,6 @@
       x: 30 + Math.random() * (W - 60),
       y: -36,
       token: t,
-      icon: BSTOCK_ICONS[t],
       r: 16,
       speed: 1.4 + Math.random() * 1.6 + wave * 0.08,
       rot: 0,
@@ -777,10 +783,10 @@
       const s = 1 + Math.sin(c.phase) * 0.06;
       ctx.scale(s, s);
       
-      const img = tokenImgs[c.icon];
+      const img = tokenImgs[c.token];
       if (img && img.complete && img.naturalWidth > 0) {
-        // Draw official Venus token icon
-        const sz = c.r * 2.2;
+        // Draw official Venus.io token icon
+        const sz = c.r * 2.6;
         ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
       } else {
         // Fallback: simple colored circle
@@ -821,7 +827,7 @@
       // Try sprite first
       const img = tokenImgs[o.token];
       if (img && img.complete && img.naturalWidth > 0) {
-        const sz = o.r * 2.2;
+        const sz = o.r * 2.8;
         // Add red tint overlay for danger effect
         ctx.globalAlpha = 0.8;
         ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
