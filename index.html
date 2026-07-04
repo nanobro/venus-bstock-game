@@ -845,19 +845,28 @@
       const img = tokenImgs[o.token];
       if (img && img.complete && img.naturalWidth > 0) {
         const sz = o.r * 2.8;
-        // Add red tint overlay for danger effect
-        ctx.globalAlpha = 0.8;
         ctx.drawImage(img, -sz/2, -sz/2, sz, sz);
-        ctx.globalAlpha = 1;
-        // Red danger ring
-        ctx.strokeStyle = '#ff4d5a';
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = 'rgba(255,77,90,0.6)';
-        ctx.shadowBlur = 8;
+        // 🚫 Prohibition sign overlay (traffic-style "no entry")
+        ctx.strokeStyle = '#ff2020';
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = 'rgba(255,32,32,0.6)';
+        ctx.shadowBlur = 10;
         ctx.beginPath();
-        ctx.arc(0, 0, o.r * 0.8, 0, Math.PI * 2);
+        ctx.arc(0, 0, o.r * 0.95, 0, Math.PI * 2);
         ctx.stroke();
         ctx.shadowBlur = 0;
+        // Diagonal slash
+        ctx.strokeStyle = '#ff2020';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(-o.r * 0.6, -o.r * 0.6);
+        ctx.lineTo(o.r * 0.6, o.r * 0.6);
+        ctx.stroke();
+        // Slight transparency on icon underneath
+        ctx.fillStyle = 'rgba(255,32,32,0.08)';
+        ctx.beginPath();
+        ctx.arc(0, 0, o.r * 0.95, 0, Math.PI * 2);
+        ctx.fill();
       } else {
         // Fallback: diamond danger shape
         ctx.fillStyle = '#ff4d5a';
